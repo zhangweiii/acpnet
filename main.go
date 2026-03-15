@@ -579,7 +579,7 @@ func dialHTTPConnect(u *url.URL) (io.ReadWriteCloser, error) {
 		Host:   u.Host,
 		Header: make(http.Header),
 	}
-	req.Header.Set("User-Agent", "acpx-host-bridge/"+version)
+	req.Header.Set("User-Agent", "acpnet/"+version)
 	if err := req.Write(conn); err != nil {
 		_ = conn.Close()
 		return nil, fmt.Errorf("write CONNECT request: %w", err)

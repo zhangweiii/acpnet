@@ -1,7 +1,7 @@
 {
   "agents": {
     "codex": {
-      "command": "/Users/zhangwei/work/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 client --server host.docker.internal:4601 --token bridge-test-20260315 --agent codex"
+      "command": "/Users/zhangwei/work/acpnet/dist/acpnet-linux-arm64 client --server host.docker.internal:4601 --token bridge-test-20260315 --agent codex"
     }
   }
 }

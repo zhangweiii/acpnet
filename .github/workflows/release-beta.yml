@@ -1,16 +1,15 @@
-name: Release
+name: Release Beta
 
 on:
   push:
     tags:
-      - "v*"
+      - "v*-beta*"
 
 permissions:
   contents: write
 
 jobs:
-  release:
-    if: ${{ !contains(github.ref_name, '-beta') }}
+  release-beta:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,13 +23,8 @@ jobs:
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: release --clean
+          args: release --clean --config .goreleaser.beta.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
-          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
-          HOMEBREW_TAP_OWNER: ${{ vars.HOMEBREW_TAP_OWNER }}
-          HOMEBREW_TAP_NAME: ${{ vars.HOMEBREW_TAP_NAME }}
-          RELEASE_COMMIT_AUTHOR_NAME: ${{ vars.RELEASE_COMMIT_AUTHOR_NAME || github.repository_owner }}
-          RELEASE_COMMIT_AUTHOR_EMAIL: ${{ vars.RELEASE_COMMIT_AUTHOR_EMAIL }}

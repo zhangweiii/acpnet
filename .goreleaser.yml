@@ -1,6 +1,11 @@
 version: 2
 
-project_name: acpx-host-bridge
+project_name: acpnet
+
+release:
+  github:
+    owner: "{{ .Env.GITHUB_REPOSITORY_OWNER }}"
+    name: "{{ .Env.GITHUB_REPOSITORY_NAME }}"
 
 before:
   hooks:
@@ -15,7 +20,7 @@ builds:
     goarch:
       - amd64
       - arm64
-    binary: acpx-host-bridge
+    binary: acpnet
     ldflags:
       - -s -w -X main.version={{.Version}}
 
@@ -42,7 +47,7 @@ changelog:
       - Merge branch
 
 brews:
-  - name: acpx-host-bridge
+  - name: acpnet
     repository:
       owner: "{{ .Env.HOMEBREW_TAP_OWNER }}"
       name: "{{ .Env.HOMEBREW_TAP_NAME }}"
@@ -51,11 +56,11 @@ brews:
       name: "{{ .Env.RELEASE_COMMIT_AUTHOR_NAME }}"
       email: "{{ .Env.RELEASE_COMMIT_AUTHOR_EMAIL }}"
     directory: Formula
-    commit_msg_template: "brew: update acpx-host-bridge to {{ .Tag }}"
-    homepage: "https://github.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/acpx-host-bridge"
+    commit_msg_template: "brew: update acpnet to {{ .Tag }}"
+    homepage: "https://github.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .Env.GITHUB_REPOSITORY_NAME }}"
     description: "Bridge Codex and Claude Code ACP adapters from a macOS host into containers over TCP or HTTP CONNECT"
     license: "MIT"
     test: |
-      assert_match version.to_s, shell_output("#{bin}/acpx-host-bridge version")
+      assert_match version.to_s, shell_output("#{bin}/acpnet version")
     install: |
-      bin.install "acpx-host-bridge"
+      bin.install "acpnet"

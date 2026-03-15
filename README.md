@@ -1,8 +1,8 @@
-# acpx-host-bridge
+# ACPNet
 
 Bridge ACP adapters running on a macOS host into OrbStack, Docker, or any other remote environment over raw TCP or HTTP CONNECT.
 
-`acpx-host-bridge` was built for one specific pain point:
+`acpnet` was built for one specific pain point:
 
 - `acpx` and OpenClaw can run inside a container
 - `codex` and `claude code` often live on the macOS host
@@ -29,7 +29,7 @@ This project turns that local stdio boundary into a network hop while keeping th
 - the host can run `codex` / `claude`
 - but the two cannot talk over local stdio directly
 
-`acpx-host-bridge` fills that gap without patching `acpx`, `codex-acp`, `claude-agent-acp`, or OpenClaw.
+`acpnet` fills that gap without patching `acpx`, `codex-acp`, `claude-agent-acp`, or OpenClaw.
 
 ## Verified scenarios
 
@@ -53,12 +53,12 @@ container / remote env
           |
           | spawn
           v
-  acpx-host-bridge client
+  acpnet client
           |
           | TCP or HTTP CONNECT
           v
 macOS host
-  acpx-host-bridge serve
+  acpnet serve
           |
           | spawn
           v
@@ -95,11 +95,11 @@ When path mappings are configured, the bridge rewrites absolute paths inside JSO
 ### Build from source
 
 ```bash
-git clone https://github.com/your-org/acpx-host-bridge.git
-cd acpx-host-bridge
+git clone https://github.com/your-org/acpnet.git
+cd acpnet
 
-go build -o dist/acpx-host-bridge-darwin-arm64 .
-GOOS=linux GOARCH=arm64 go build -o dist/acpx-host-bridge-linux-arm64 .
+go build -o dist/acpnet-darwin-arm64 .
+GOOS=linux GOARCH=arm64 go build -o dist/acpnet-linux-arm64 .
 ```
 
 ### Homebrew
@@ -107,7 +107,7 @@ GOOS=linux GOARCH=arm64 go build -o dist/acpx-host-bridge-linux-arm64 .
 Homebrew support is included via GoReleaser. After the project is published:
 
 ```bash
-brew install your-tap/acpx-host-bridge
+brew install your-tap/acpnet
 ```
 
 ## Usage
@@ -119,7 +119,7 @@ Raw TCP only:
 ```bash
 TOKEN='replace-with-a-random-secret'
 
-./dist/acpx-host-bridge-darwin-arm64 serve \
+./dist/acpnet-darwin-arm64 serve \
   --listen 0.0.0.0:4601 \
   --token "$TOKEN"
 ```
@@ -129,7 +129,7 @@ Raw TCP + HTTP CONNECT:
 ```bash
 TOKEN='replace-with-a-random-secret'
 
-./dist/acpx-host-bridge-darwin-arm64 serve \
+./dist/acpnet-darwin-arm64 serve \
   --listen 0.0.0.0:4601 \
   --http-listen 0.0.0.0:4603 \
   --http-path /v1/connect \
@@ -139,7 +139,7 @@ TOKEN='replace-with-a-random-secret'
 With path mapping:
 
 ```bash
-./dist/acpx-host-bridge-darwin-arm64 serve \
+./dist/acpnet-darwin-arm64 serve \
   --listen 0.0.0.0:4601 \
   --http-listen 0.0.0.0:4603 \
   --token "$TOKEN" \
@@ -151,7 +151,7 @@ With path mapping:
 Raw TCP:
 
 ```bash
-/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 \
+/workspace/acpnet/dist/acpnet-linux-arm64 \
   client \
   --server tcp://host.docker.internal:4601 \
   --token "$TOKEN" \
@@ -161,7 +161,7 @@ Raw TCP:
 HTTP CONNECT:
 
 ```bash
-/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 \
+/workspace/acpnet/dist/acpnet-linux-arm64 \
   client \
   --server http://host.docker.internal:4603/v1/connect \
   --token "$TOKEN" \
@@ -180,10 +180,10 @@ The cleanest setup is to override `acpx` agent aliases in `~/.acpx/config.json`.
 {
   "agents": {
     "codex": {
-      "command": "/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 client --server tcp://host.docker.internal:4601 --token YOUR_TOKEN --agent codex"
+      "command": "/workspace/acpnet/dist/acpnet-linux-arm64 client --server tcp://host.docker.internal:4601 --token YOUR_TOKEN --agent codex"
     },
     "claude": {
-      "command": "/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 client --server tcp://host.docker.internal:4601 --token YOUR_TOKEN --agent claude"
+      "command": "/workspace/acpnet/dist/acpnet-linux-arm64 client --server tcp://host.docker.internal:4601 --token YOUR_TOKEN --agent claude"
     }
   }
 }
@@ -195,10 +195,10 @@ The cleanest setup is to override `acpx` agent aliases in `~/.acpx/config.json`.
 {
   "agents": {
     "codex": {
-      "command": "/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 client --server http://host.docker.internal:4603/v1/connect --token YOUR_TOKEN --agent codex"
+      "command": "/workspace/acpnet/dist/acpnet-linux-arm64 client --server http://host.docker.internal:4603/v1/connect --token YOUR_TOKEN --agent codex"
     },
     "claude": {
-      "command": "/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 client --server http://host.docker.internal:4603/v1/connect --token YOUR_TOKEN --agent claude"
+      "command": "/workspace/acpnet/dist/acpnet-linux-arm64 client --server http://host.docker.internal:4603/v1/connect --token YOUR_TOKEN --agent claude"
     }
   }
 }
@@ -219,8 +219,8 @@ Recommended pattern:
 
 1. Run OpenClaw inside the container
 2. Install and enable the OpenClaw `acpx` plugin
-3. Configure container-local `~/.acpx/config.json` to point `codex` / `claude` to `acpx-host-bridge client`
-4. Run `acpx-host-bridge serve` on the host
+3. Configure container-local `~/.acpx/config.json` to point `codex` / `claude` to `acpnet client`
+4. Run `acpnet serve` on the host
 
 This avoids patching OpenClaw source code.
 
@@ -234,7 +234,7 @@ If you do not override adapter commands, the host server uses:
 Override them if you need different versions:
 
 ```bash
-./dist/acpx-host-bridge-darwin-arm64 serve \
+./dist/acpnet-darwin-arm64 serve \
   --token "$TOKEN" \
   --codex-cmd 'npx -y @zed-industries/codex-acp@0.10.0' \
   --claude-cmd 'npx -y @zed-industries/claude-agent-acp@0.21.0'
@@ -259,7 +259,7 @@ Example response:
 ### Server
 
 ```bash
-acpx-host-bridge serve \
+acpnet serve \
   --listen 0.0.0.0:4601 \
   --http-listen 0.0.0.0:4603 \
   --http-path /v1/connect \
@@ -272,7 +272,7 @@ acpx-host-bridge serve \
 ### Client
 
 ```bash
-acpx-host-bridge client \
+acpnet client \
   --server tcp://host.docker.internal:4601 \
   --token YOUR_TOKEN \
   --agent codex \
@@ -282,7 +282,7 @@ acpx-host-bridge client \
 ### Version
 
 ```bash
-acpx-host-bridge version
+acpnet version
 ```
 
 ## Development

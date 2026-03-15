@@ -1,4 +1,4 @@
-# acpx-host-bridge
+# ACPNet
 
 把运行在 macOS 宿主机上的 ACP adapter，通过原始 TCP 或 HTTP CONNECT，桥接给 OrbStack、Docker 或其他远程环境里的 `acpx` / OpenClaw 使用。
 
@@ -8,7 +8,7 @@
 - `codex` 和 `claude code` 跑在 macOS 宿主机
 - ACP adapter 默认要求“本地 stdio 直连”
 
-`acpx-host-bridge` 把这个“本地 stdio 边界”变成一次网络跳转，同时尽量不修改上游工具。
+`acpnet` 把这个“本地 stdio 边界”变成一次网络跳转，同时尽量不修改上游工具。
 
 ## 能做什么
 
@@ -52,12 +52,12 @@
           |
           | spawn
           v
-  acpx-host-bridge client
+  acpnet client
           |
           | TCP 或 HTTP CONNECT
           v
 macOS 宿主机
-  acpx-host-bridge serve
+  acpnet serve
           |
           | spawn
           v
@@ -94,11 +94,11 @@ macOS 宿主机
 ### 从源码构建
 
 ```bash
-git clone https://github.com/your-org/acpx-host-bridge.git
-cd acpx-host-bridge
+git clone https://github.com/your-org/acpnet.git
+cd acpnet
 
-go build -o dist/acpx-host-bridge-darwin-arm64 .
-GOOS=linux GOARCH=arm64 go build -o dist/acpx-host-bridge-linux-arm64 .
+go build -o dist/acpnet-darwin-arm64 .
+GOOS=linux GOARCH=arm64 go build -o dist/acpnet-linux-arm64 .
 ```
 
 ### Homebrew
@@ -106,7 +106,7 @@ GOOS=linux GOARCH=arm64 go build -o dist/acpx-host-bridge-linux-arm64 .
 项目已经准备好通过 GoReleaser 发布到 Homebrew。正式发布后可以这样安装：
 
 ```bash
-brew install your-tap/acpx-host-bridge
+brew install your-tap/acpnet
 ```
 
 ## 使用方式
@@ -118,7 +118,7 @@ brew install your-tap/acpx-host-bridge
 ```bash
 TOKEN='replace-with-a-random-secret'
 
-./dist/acpx-host-bridge-darwin-arm64 serve \
+./dist/acpnet-darwin-arm64 serve \
   --listen 0.0.0.0:4601 \
   --token "$TOKEN"
 ```
@@ -128,7 +128,7 @@ TOKEN='replace-with-a-random-secret'
 ```bash
 TOKEN='replace-with-a-random-secret'
 
-./dist/acpx-host-bridge-darwin-arm64 serve \
+./dist/acpnet-darwin-arm64 serve \
   --listen 0.0.0.0:4601 \
   --http-listen 0.0.0.0:4603 \
   --http-path /v1/connect \
@@ -138,7 +138,7 @@ TOKEN='replace-with-a-random-secret'
 配置路径映射：
 
 ```bash
-./dist/acpx-host-bridge-darwin-arm64 serve \
+./dist/acpnet-darwin-arm64 serve \
   --listen 0.0.0.0:4601 \
   --http-listen 0.0.0.0:4603 \
   --token "$TOKEN" \
@@ -150,7 +150,7 @@ TOKEN='replace-with-a-random-secret'
 raw TCP：
 
 ```bash
-/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 \
+/workspace/acpnet/dist/acpnet-linux-arm64 \
   client \
   --server tcp://host.docker.internal:4601 \
   --token "$TOKEN" \
@@ -160,7 +160,7 @@ raw TCP：
 HTTP CONNECT：
 
 ```bash
-/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 \
+/workspace/acpnet/dist/acpnet-linux-arm64 \
   client \
   --server http://host.docker.internal:4603/v1/connect \
   --token "$TOKEN" \
@@ -179,10 +179,10 @@ HTTP CONNECT：
 {
   "agents": {
     "codex": {
-      "command": "/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 client --server tcp://host.docker.internal:4601 --token YOUR_TOKEN --agent codex"
+      "command": "/workspace/acpnet/dist/acpnet-linux-arm64 client --server tcp://host.docker.internal:4601 --token YOUR_TOKEN --agent codex"
     },
     "claude": {
-      "command": "/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 client --server tcp://host.docker.internal:4601 --token YOUR_TOKEN --agent claude"
+      "command": "/workspace/acpnet/dist/acpnet-linux-arm64 client --server tcp://host.docker.internal:4601 --token YOUR_TOKEN --agent claude"
     }
   }
 }
@@ -194,10 +194,10 @@ HTTP CONNECT：
 {
   "agents": {
     "codex": {
-      "command": "/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 client --server http://host.docker.internal:4603/v1/connect --token YOUR_TOKEN --agent codex"
+      "command": "/workspace/acpnet/dist/acpnet-linux-arm64 client --server http://host.docker.internal:4603/v1/connect --token YOUR_TOKEN --agent codex"
     },
     "claude": {
-      "command": "/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 client --server http://host.docker.internal:4603/v1/connect --token YOUR_TOKEN --agent claude"
+      "command": "/workspace/acpnet/dist/acpnet-linux-arm64 client --server http://host.docker.internal:4603/v1/connect --token YOUR_TOKEN --agent claude"
     }
   }
 }
@@ -219,7 +219,7 @@ acpx claude exec "Reply with exactly OK."
 1. OpenClaw 跑在容器里
 2. 安装并启用 OpenClaw 的 `acpx` 插件
 3. 在容器里配置 `~/.acpx/config.json`
-4. 宿主机启动 `acpx-host-bridge serve`
+4. 宿主机启动 `acpnet serve`
 
 这样不用改 OpenClaw 源码。
 
@@ -233,7 +233,7 @@ acpx claude exec "Reply with exactly OK."
 如果你想固定成别的版本：
 
 ```bash
-./dist/acpx-host-bridge-darwin-arm64 serve \
+./dist/acpnet-darwin-arm64 serve \
   --token "$TOKEN" \
   --codex-cmd 'npx -y @zed-industries/codex-acp@0.10.0' \
   --claude-cmd 'npx -y @zed-industries/claude-agent-acp@0.21.0'
@@ -258,7 +258,7 @@ curl http://127.0.0.1:4603/healthz
 ### Server
 
 ```bash
-acpx-host-bridge serve \
+acpnet serve \
   --listen 0.0.0.0:4601 \
   --http-listen 0.0.0.0:4603 \
   --http-path /v1/connect \
@@ -271,7 +271,7 @@ acpx-host-bridge serve \
 ### Client
 
 ```bash
-acpx-host-bridge client \
+acpnet client \
   --server tcp://host.docker.internal:4601 \
   --token YOUR_TOKEN \
   --agent codex \
@@ -281,7 +281,7 @@ acpx-host-bridge client \
 ### Version
 
 ```bash
-acpx-host-bridge version
+acpnet version
 ```
 
 ## 开发
