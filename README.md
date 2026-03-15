@@ -90,6 +90,53 @@ The bridge uses a small handshake, then tunnels the remaining ACP traffic.
 
 When path mappings are configured, the bridge rewrites absolute paths inside JSON lines in both directions. This is what makes `/workspace/...` inside the container work against `/Users/...` on the host.
 
+## Path mapping with `--map`
+
+`--map` is required whenever the client-side path and host-side path are different.
+
+Example:
+
+- container or OpenClaw side project path: `/app`
+- macOS host project path: `/Users/zhangwei/work/my-project`
+
+Start the host bridge like this:
+
+```bash
+acpnet serve \
+  --listen 0.0.0.0:4601 \
+  --token "$TOKEN" \
+  --map /app=/Users/zhangwei/work/my-project
+```
+
+What `--map` does:
+
+- maps the incoming client `cwd` before the host adapter starts
+- rewrites absolute paths inside ACP JSON lines in both directions
+- keeps the container seeing `/app/...` while the host agent sees `/Users/...`
+
+When you need it:
+
+- container path and host path are different
+- OpenClaw or `acpx` runs in Docker/OrbStack with a mounted project
+- the host agent must work on the same files through a different absolute path
+
+When you do not need it:
+
+- the client and host both use the same absolute path
+
+Common mistake:
+
+- client runs in `/app`
+- host bridge starts without `--map`
+- host rejects the request with an error such as `stat "/app": no such file or directory`
+
+Important limitation:
+
+- `acpnet` bridges ACP traffic, not filesystems
+- if the client runs on a different machine, the host must also have the same project files
+- `--map` only translates paths; it does not copy or mount code
+- if the host does not have the project locally, Codex or Claude Code cannot work on it
+
 ## Install
 
 ### Homebrew
@@ -156,6 +203,15 @@ With path mapping:
   --http-listen 0.0.0.0:4603 \
   --token "$TOKEN" \
   --map /workspace=/Users/zhangwei/work
+```
+
+If the container uses `/app` instead of `/workspace`, map that path instead:
+
+```bash
+./dist/acpnet-darwin-arm64 serve \
+  --listen 0.0.0.0:4601 \
+  --token "$TOKEN" \
+  --map /app=/Users/zhangwei/work/my-project
 ```
 
 ### 2. Use the client from a container

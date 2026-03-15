@@ -89,6 +89,53 @@ macOS 宿主机
 
 当配置了 `--map` 时，bridge 会对 JSON 行中的绝对路径做双向重写。这也是为什么容器里的 `/workspace/...` 可以映射到宿主机的 `/Users/...`。
 
+## `--map` 路径映射怎么用
+
+只要客户端这一侧的路径和宿主机上的实际路径不一致，就应该配置 `--map`。
+
+例如：
+
+- 容器 / OpenClaw 这一侧项目路径是 `/app`
+- macOS 宿主机上的实际项目路径是 `/Users/zhangwei/work/my-project`
+
+宿主机应该这样启动：
+
+```bash
+acpnet serve \
+  --listen 0.0.0.0:4601 \
+  --token "$TOKEN" \
+  --map /app=/Users/zhangwei/work/my-project
+```
+
+`--map` 实际做的事情：
+
+- 在宿主机启动 adapter 之前，把传入的 `cwd` 改成宿主机路径
+- 对 ACP JSON 行里的绝对路径做双向重写
+- 让容器继续看到 `/app/...`，而宿主机 agent 看到 `/Users/...`
+
+什么时候必须配：
+
+- 容器路径和宿主机路径不同
+- OpenClaw 或 `acpx` 跑在 Docker / OrbStack 里
+- 宿主机 agent 需要对同一份代码工作，但两边绝对路径不同
+
+什么时候可以不配：
+
+- 客户端和宿主机本来就是同一个绝对路径
+
+最常见的错误：
+
+- 客户端工作目录是 `/app`
+- 宿主机没有加 `--map`
+- 然后宿主机会报类似 `stat "/app": no such file or directory`
+
+一个重要限制：
+
+- `acpnet` 只桥接 ACP 流量，不同步文件系统
+- 如果客户端跑在另一台机器上，宿主机也必须有同一份代码
+- `--map` 只能翻译路径，不能帮你复制代码或挂载目录
+- 如果宿主机本地没有那份项目，Codex 或 Claude Code 仍然无法正常工作
+
 ## 安装
 
 ### Homebrew
@@ -155,6 +202,15 @@ TOKEN='replace-with-a-random-secret'
   --http-listen 0.0.0.0:4603 \
   --token "$TOKEN" \
   --map /workspace=/Users/zhangwei/work
+```
+
+如果容器里使用的是 `/app` 而不是 `/workspace`，就应该改成：
+
+```bash
+./dist/acpnet-darwin-arm64 serve \
+  --listen 0.0.0.0:4601 \
+  --token "$TOKEN" \
+  --map /app=/Users/zhangwei/work/my-project
 ```
 
 ### 2. 在容器里使用 bridge client
