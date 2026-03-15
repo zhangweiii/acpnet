@@ -22,5 +22,14 @@ jobs:
       - name: Verify GoReleaser config
         uses: goreleaser/goreleaser-action@v6
         with:
-          version: latest
+          version: "~> v2"
           args: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN || 'dummy' }}
+          HOMEBREW_TAP_OWNER: ${{ vars.HOMEBREW_TAP_OWNER || github.repository_owner }}
+          HOMEBREW_TAP_NAME: ${{ vars.HOMEBREW_TAP_NAME || 'homebrew-tap' }}
+          RELEASE_COMMIT_AUTHOR_NAME: ${{ vars.RELEASE_COMMIT_AUTHOR_NAME || github.repository_owner }}
+          RELEASE_COMMIT_AUTHOR_EMAIL: ${{ vars.RELEASE_COMMIT_AUTHOR_EMAIL || 'actions@users.noreply.github.com' }}
