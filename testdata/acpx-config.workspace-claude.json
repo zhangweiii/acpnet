@@ -1,0 +1,7 @@
+{
+  "agents": {
+    "claude": {
+      "command": "/workspace/acpx-host-bridge/dist/acpx-host-bridge-linux-arm64 client --server host.docker.internal:4602 --token bridge-scope-20260315 --agent claude"
+    }
+  }
+}

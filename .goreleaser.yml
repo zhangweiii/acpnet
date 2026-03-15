@@ -1,0 +1,61 @@
+version: 2
+
+project_name: acpx-host-bridge
+
+before:
+  hooks:
+    - go test ./...
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    binary: acpx-host-bridge
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - formats:
+      - tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - README.zh.md
+      - LICENSE
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - Merge pull request
+      - Merge branch
+
+brews:
+  - name: acpx-host-bridge
+    repository:
+      owner: "{{ .Env.HOMEBREW_TAP_OWNER }}"
+      name: "{{ .Env.HOMEBREW_TAP_NAME }}"
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    commit_author:
+      name: "{{ .Env.RELEASE_COMMIT_AUTHOR_NAME }}"
+      email: "{{ .Env.RELEASE_COMMIT_AUTHOR_EMAIL }}"
+    directory: Formula
+    commit_msg_template: "brew: update acpx-host-bridge to {{ .Tag }}"
+    homepage: "https://github.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/acpx-host-bridge"
+    description: "Bridge Codex and Claude Code ACP adapters from a macOS host into containers over TCP or HTTP CONNECT"
+    license: "MIT"
+    test: |
+      assert_match version.to_s, shell_output("#{bin}/acpx-host-bridge version")
+    install: |
+      bin.install "acpx-host-bridge"

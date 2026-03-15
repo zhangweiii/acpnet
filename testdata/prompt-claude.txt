@@ -1,0 +1,1 @@
+Reply with exactly HOST_CLAUDE_OK and nothing else.

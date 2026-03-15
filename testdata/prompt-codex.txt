@@ -1,0 +1,1 @@
+Reply with exactly HOST_CODEX_OK and nothing else.
