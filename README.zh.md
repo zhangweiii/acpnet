@@ -91,6 +91,26 @@ macOS 宿主机
 
 ## 安装
 
+### Homebrew
+
+安装已发布版本：
+
+```bash
+brew install zhangweiii/tap/acpnet
+```
+
+升级到最新发布版本：
+
+```bash
+brew upgrade acpnet
+```
+
+确认当前安装版本：
+
+```bash
+acpnet version
+```
+
 ### 从源码构建
 
 ```bash
@@ -99,14 +119,6 @@ cd acpnet
 
 go build -o dist/acpnet-darwin-arm64 .
 GOOS=linux GOARCH=arm64 go build -o dist/acpnet-linux-arm64 .
-```
-
-### Homebrew
-
-项目已经准备好通过 GoReleaser 发布到 Homebrew。正式发布后可以这样安装：
-
-```bash
-brew install your-tap/acpnet
 ```
 
 ## 使用方式
@@ -222,6 +234,50 @@ acpx claude exec "Reply with exactly OK."
 4. 宿主机启动 `acpnet serve`
 
 这样不用改 OpenClaw 源码。
+
+## 端到端验证
+
+仓库里附带了一份针对 Homebrew 发布版的验证脚本。
+
+只验证本机链路：
+
+```bash
+./scripts/verify-brew-e2e.sh
+```
+
+连容器链路一起验证：
+
+```bash
+./scripts/verify-brew-e2e.sh --container
+```
+
+如果你本机已经有带 `node`、`npm`、`npx` 的可用镜像，可以覆盖默认镜像：
+
+```bash
+ACPNET_E2E_IMAGE=agent0ai/agent-zero:latest ./scripts/verify-brew-e2e.sh --container
+```
+
+脚本会验证：
+
+- brew 安装的宿主机 `acpnet serve`
+- raw TCP 和 HTTP CONNECT
+- 本机 `acpx -> acpnet -> host codex`
+- 本机 `acpx -> acpnet -> host claude`
+- 可选的容器链路：`acpx -> release Linux acpnet client -> brew 宿主机 acpnet`
+
+依赖要求：
+
+- 通过 Homebrew 安装好的本机 `acpnet`
+- `npx`
+- `codex`
+- `claude`
+- 使用 `--container` 时还需要 `docker`
+
+可覆盖环境变量：
+
+- `ACPNET_E2E_IMAGE`: `--container` 使用的容器镜像
+- `ACPNET_E2E_WORKSPACE`: 挂载为 `/workspace` 的宿主机路径
+- `ACPNET_E2E_REPO_OWNER` / `ACPNET_E2E_REPO_NAME`: release 下载源覆盖
 
 ## 默认 adapter 命令
 

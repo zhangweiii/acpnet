@@ -92,6 +92,26 @@ When path mappings are configured, the bridge rewrites absolute paths inside JSO
 
 ## Install
 
+### Homebrew
+
+Install the published build:
+
+```bash
+brew install zhangweiii/tap/acpnet
+```
+
+Upgrade to the latest published build:
+
+```bash
+brew upgrade acpnet
+```
+
+Confirm the installed version:
+
+```bash
+acpnet version
+```
+
 ### Build from source
 
 ```bash
@@ -100,14 +120,6 @@ cd acpnet
 
 go build -o dist/acpnet-darwin-arm64 .
 GOOS=linux GOARCH=arm64 go build -o dist/acpnet-linux-arm64 .
-```
-
-### Homebrew
-
-Homebrew support is included via GoReleaser. After the project is published:
-
-```bash
-brew install your-tap/acpnet
 ```
 
 ## Usage
@@ -223,6 +235,50 @@ Recommended pattern:
 4. Run `acpnet serve` on the host
 
 This avoids patching OpenClaw source code.
+
+## End-to-end verification
+
+The repository includes a verification script for the published Homebrew build.
+
+Local checks only:
+
+```bash
+./scripts/verify-brew-e2e.sh
+```
+
+Local checks plus container checks:
+
+```bash
+./scripts/verify-brew-e2e.sh --container
+```
+
+If your environment already has a suitable image with `node`, `npm`, and `npx`, override the default image:
+
+```bash
+ACPNET_E2E_IMAGE=agent0ai/agent-zero:latest ./scripts/verify-brew-e2e.sh --container
+```
+
+What the script validates:
+
+- the brew-installed host `acpnet serve`
+- raw TCP and HTTP CONNECT transport
+- local `acpx -> acpnet -> host codex`
+- local `acpx -> acpnet -> host claude`
+- optional container `acpx -> release Linux acpnet client -> brew host acpnet`
+
+Requirements:
+
+- local `acpnet` installed from Homebrew
+- `npx`
+- `codex` for Codex checks
+- `claude` for Claude checks
+- `docker` only when using `--container`
+
+Environment overrides:
+
+- `ACPNET_E2E_IMAGE`: container image to use for `--container`
+- `ACPNET_E2E_WORKSPACE`: host path mapped as `/workspace`
+- `ACPNET_E2E_REPO_OWNER` / `ACPNET_E2E_REPO_NAME`: release source override
 
 ## Defaults
 
